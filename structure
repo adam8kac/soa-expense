@@ -1,0 +1,90 @@
+Models {
+	ItemModel:
+		item_name: str
+		item_price: float
+		item_quantity: int
+
+	ExpenseModelResponse:
+		description: Optional[str]
+		items: list[ItemModel]
+		total_price: float
+		created_at: datetime
+		updated_at: datetime
+
+	ReportModel:
+		date_from: Optional[datetime]
+		date_to: Optional[datetime]
+		expenses: list[ExpenseModelResponse]
+		most_expensive_items: list[ItemModel]
+		total_price: float
+		created_at: datetime
+
+	ExpenseModelRequest:
+		description: Optional[str]
+		items: list[ItemModel]
+}
+
+
+Firestore Schema {
+	user_id/expenses/expenses/expense_id:
+		description: string
+		items: list[ItemModel]
+		total_price: float
+		created_at: datetime
+		updated_at: datetime
+
+	user_id/reports/reports/report_id:
+		date_from: Optional[datetime]
+		date_to: Optional[datetime]
+		expenses: list[ExpenseModelResponse]
+		most_expensive_items: list[ItemModel]
+		total_price: float
+		created_at: datetime
+}
+
+
+docker: [docker run -p 8000:8000 --env-file ./.env adam8kac/soa-expense:latest]
+env: [GOOGLE_SERVICE_ACCOUNT_B64="..." ] # base64 encoded firebase credentials
+
+
+methods:
+
+[GET] /{user_id}/expenses/
+-> return all expenses for a user
+-> query params: date_from (optional), date_to (optional)
+
+[POST] /{user_id}/expenses/create
+-> create a new expense for a user
+-> body: ExpenseRequest { description: Optional[str], items: list[Item] }
+
+[PUT] /{user_id}/expenses/{expense_id}/item/{item_id}/update
+-> update an item of an expense
+-> body: Item { item_name: str, item_price: float, item_quantity: int }
+
+[PUT] /{user_id}/expenses/description/update
+-> update the description of an expense
+-> query params: expense_id (required)
+-> body: { "description": "string" }
+
+[POST] /{user_id}/expenses/report/create
+-> create a new report for a user
+-> query params: date_from (optional), date_to (optional)
+
+[GET] /{user_id}/expenses/reports
+-> return all report_ids for a user
+
+[GET] /{user_id}/expenses/report
+-> return a report by id
+-> query params: report_id (required)
+
+[DELETE] /{user_id}/expenses/report/delete/{report_id}
+-> delete a report by id
+
+[DELETE] /{user_id}/expenses/report/delete-all
+-> delete all reports for a user
+
+[DELETE] /{user_id}/expenses/expense/delete/{expense_id}
+-> delete an expense by id
+
+[DELETE] /{user_id}/expenses/expense/delete-all
+-> delete all expenses for a user
