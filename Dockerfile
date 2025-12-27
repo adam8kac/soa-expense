@@ -2,7 +2,7 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi uvicorn python-dotenv pydantic firebase-admin
+RUN pip install --no-cache-dir fastapi uvicorn python-dotenv pydantic firebase-admin PyJWT
 
 COPY . /app
 
