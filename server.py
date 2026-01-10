@@ -1,22 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from routers.router import router
+from routers.statistika_router import router as statistics_router
+from middleware.logging_middleware import LoggingMiddleware
 import uvicorn
 import os
 
-app = FastAPI()
+app = FastAPI(
+    title="Expense Tracker Service",
+    description="API for managing expenses and tracking API call statistics",
+    version="1.0.0",
+)
+
+# Add logging middleware
+app.add_middleware(LoggingMiddleware)
+
 
 def get_allowed_origins():
     env_origins = os.getenv("CORS_ORIGINS")
     if env_origins:
         return [origin.strip() for origin in env_origins.split(",")]
-    
+
     common_ports = [3000, 5173, 5174, 8080, 8081]
     return [
         f"http://{host}:{port}"
         for host in ["localhost", "127.0.0.1"]
         for port in common_ports
     ]
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +39,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(statistics_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
